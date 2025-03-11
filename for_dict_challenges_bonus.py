@@ -38,7 +38,7 @@ import lorem
 
 
 def generate_chat_history():
-    messages_amount = random.randint(200, 1000)
+    messages_amount = random.randint(200, 1000) #(200, 1000)
     users_ids = list(
         {random.randint(1, 10000) for _ in range(random.randint(5, 20))}
     )
@@ -66,5 +66,58 @@ def generate_chat_history():
     return messages
 
 
+def who_wrote_most(message):
+    users_write = {}
+    for part in message:
+        if part['sent_by'] not in users_write:
+            users_write[part['sent_by']] = 1
+        else:
+            users_write[part['sent_by']] += 1
+    result = max(users_write, key=users_write.get)
+    count_result = users_write[result]
+    return result, count_result
+
+
+def who_is_most_popular(message):
+    users_answer = {}
+    for part in message:
+        if part['reply_for'] == None:
+            continue
+        elif part['reply_for'] not in users_answer:
+            users_answer[part['reply_for']] = 1
+        else:
+            users_answer[part['reply_for']] += 1
+    for part in message:
+        if part['id'] == max(users_answer, key=users_answer.get):
+            result = part['sent_by']
+            count_result = users_answer[max(users_answer, key=users_answer.get)]
+    return result, count_result
+
+
+
+
+
+def who_is_most_visible():
+    pass
+
+
+def who_is_most_active_part_of_day():
+    pass
+
+
+def the_longest_holy_war():
+    pass
+
+
+def main():
+    message = generate_chat_history()
+    wrote_most, count_wrote_most = who_wrote_most(message)
+    most_answer, count_most_answer = who_is_most_popular(message)
+    print(f'Id пользователя, который написал больше всех сообщений:\nId:{wrote_most} - {count_wrote_most}!')
+    print()
+    print(f'Id пользователя, на сообщения которого больше всего отвечали:\nId:{most_answer} - {count_most_answer}!')
+
+
+
 if __name__ == "__main__":
-    print(generate_chat_history())
+    main()
