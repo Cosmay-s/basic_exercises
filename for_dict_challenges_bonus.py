@@ -37,7 +37,7 @@ import lorem
 
 
 def generate_chat_history():
-    messages_amount = random.randint(200, 1000) #(200, 1000)
+    messages_amount = random.randint(200, 1000)
     users_ids = list(
         {random.randint(1, 10000) for _ in range(random.randint(5, 20))}
     )
@@ -103,8 +103,8 @@ def who_is_most_visible(message):
             users_seen[part['sent_by']] + part['seen_by']
     for user, list_users in users_seen.items():
         users_seen[user] = len(set(list_users))
-    for top in range(1, 6):
-        print(f'{top}. Id пользователя: {max(users_seen, key=users_seen.get)} - {users_seen[max(users_seen, key=users_seen.get)]}!')
+    for top in range(1, 4):
+        print(f'{top}. Id пользователя: {max(users_seen, key=users_seen.get)} - {users_seen[max(users_seen, key=users_seen.get)]} ответов!')
         del users_seen[max(users_seen, key=users_seen.get)]
 
 
@@ -130,8 +130,25 @@ def who_is_most_active_part_of_day(message):
     return result, count_result
 
 
-def the_longest_holy_war():
-    pass
+def the_longest_holy_war(message):
+    holy_war_length = {}
+    for part in message:
+        if part["id"] not in holy_war_length:
+            holy_war_length[part["id"]] = [part["id"]]
+            continue
+    for message_id in holy_war_length:
+        for part in message:
+            if part["reply_for"] == None:                            # Я так и не смог сформулировать для себя что такое "тред" поэтому 2 версии.
+                continue                                             # if part["reply_for"] == holy_war_length[message_id][-1]: - последовательная версия
+            if part["reply_for"] in holy_war_length[message_id]:     # if part["reply_for"] in holy_war_length[message_id]: - связанная версия
+                holy_war_length[message_id].append(part["id"])
+    for message_id, tred_message_id in holy_war_length.items():
+        holy_war_length[message_id] = len(tred_message_id)
+    for top in range(1, 4):
+        result = max(holy_war_length, key=holy_war_length.get)
+        count_result = holy_war_length[result] - 1
+        print(f'{top}. Id сообщения: {result}, длина треда {count_result}!')
+        del holy_war_length[result]
 
 
 def main():
@@ -139,15 +156,22 @@ def main():
     wrote_most, count_wrote_most = who_wrote_most(message)
     most_answer, count_most_answer = who_is_most_popular(message)
     most_active_part_of_day, count_active_part_of_day = who_is_most_active_part_of_day(message)
+    print('1.')
     print(f'Id пользователя, который написал больше всех сообщений:\nId: {wrote_most} - {count_wrote_most} сообщений!')
     print()
+    print('2.')
     print(f'Id пользователя, на сообщения которого больше всего отвечали:\nId: {most_answer} - {count_most_answer} ответов!')
     print()
+    print('3.')
     print('Id пользователей, сообщения которых видело больше всего уникальных пользователей:')
     who_is_most_visible(message)
     print()
+    print('4.')
     print(f'Самая активная часть дня в чате: {most_active_part_of_day} - {count_active_part_of_day} сообщений!')
     print()
+    print('5.')
+    print('Идентификаторы сообщений, который стали началом для самых длинных тредов:')
+    the_longest_holy_war(message)
 
 
 if __name__ == "__main__":
