@@ -82,7 +82,8 @@ def who_is_most_popular(message):
     for part in message:
         if part['reply_for'] == None:
             continue
-        elif part['reply_for'] not in users_answer:
+
+        if part['reply_for'] not in users_answer:
             users_answer[part['reply_for']] = 1
         else:
             users_answer[part['reply_for']] += 1
@@ -107,8 +108,26 @@ def who_is_most_visible(message):
         del users_seen[max(users_seen, key=users_seen.get)]
 
 
-def who_is_most_active_part_of_day():
-    pass
+def who_is_most_active_part_of_day(message):
+    part_of_day_activity = {
+        "Утро": 0,
+        "День": 0,
+        "Вечер": 0,
+        "Ночь": 0,
+    }
+    for part in message:
+        message_hour = part["sent_at"].hour
+        if message_hour > 4 and message_hour < 12:
+            part_of_day_activity["Утро"] += 1
+        elif message_hour >= 12 and message_hour < 18:
+            part_of_day_activity["День"] += 1
+        elif message_hour >= 18 and message_hour < 24:
+            part_of_day_activity["Вечер"] += 1
+        else:
+            part_of_day_activity["Ночь"] += 1
+    result = max(part_of_day_activity, key=part_of_day_activity.get)
+    count_result = part_of_day_activity[result]
+    return result, count_result
 
 
 def the_longest_holy_war():
@@ -119,13 +138,16 @@ def main():
     message = generate_chat_history()
     wrote_most, count_wrote_most = who_wrote_most(message)
     most_answer, count_most_answer = who_is_most_popular(message)
-    print(f'Id пользователя, который написал больше всех сообщений:\nId:{wrote_most} - {count_wrote_most}!')
+    most_active_part_of_day, count_active_part_of_day = who_is_most_active_part_of_day(message)
+    print(f'Id пользователя, который написал больше всех сообщений:\nId: {wrote_most} - {count_wrote_most} сообщений!')
     print()
-    print(f'Id пользователя, на сообщения которого больше всего отвечали:\nId:{most_answer} - {count_most_answer}!')
+    print(f'Id пользователя, на сообщения которого больше всего отвечали:\nId: {most_answer} - {count_most_answer} ответов!')
     print()
     print('Id пользователей, сообщения которых видело больше всего уникальных пользователей:')
     who_is_most_visible(message)
-
+    print()
+    print(f'Самая активная часть дня в чате: {most_active_part_of_day} - {count_active_part_of_day} сообщений!')
+    print()
 
 
 if __name__ == "__main__":
