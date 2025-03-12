@@ -33,7 +33,6 @@ messages = [
 import random
 import uuid
 import datetime
-
 import lorem
 
 
@@ -94,11 +93,18 @@ def who_is_most_popular(message):
     return result, count_result
 
 
-
-
-
-def who_is_most_visible():
-    pass
+def who_is_most_visible(message):
+    users_seen = {}
+    for part in message:
+        if part['sent_by'] not in users_seen:
+            users_seen[part['sent_by']] = part['seen_by']
+        else:
+            users_seen[part['sent_by']] + part['seen_by']
+    for user, list_users in users_seen.items():
+        users_seen[user] = len(set(list_users))
+    for top in range(1, 6):
+        print(f'{top}. Id пользователя: {max(users_seen, key=users_seen.get)} - {users_seen[max(users_seen, key=users_seen.get)]}!')
+        del users_seen[max(users_seen, key=users_seen.get)]
 
 
 def who_is_most_active_part_of_day():
@@ -116,6 +122,9 @@ def main():
     print(f'Id пользователя, который написал больше всех сообщений:\nId:{wrote_most} - {count_wrote_most}!')
     print()
     print(f'Id пользователя, на сообщения которого больше всего отвечали:\nId:{most_answer} - {count_most_answer}!')
+    print()
+    print('Id пользователей, сообщения которых видело больше всего уникальных пользователей:')
+    who_is_most_visible(message)
 
 
 
