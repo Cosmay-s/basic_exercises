@@ -30,10 +30,8 @@ is_male = {
 }
 print("Задание 3")
 for name in is_male:
-    if is_male[name] == False:
-        print(f"{name}: жен.")
-    else:
-        print(f"{name}: муж.")
+    result = 'муж.' if is_male[name] else 'жен.'
+    print(f"{name}: {result}")
 
 
 # Задание 4
@@ -49,10 +47,8 @@ groups = [
     ['Оля', 'Петя', 'Гриша'],
 ]
 print("Задание 4")
-number = 1
-for group in groups:
+for number, group in enumerate(groups, 1):
     print(f"Группа {number}: {len(group)} ученика.")
-    number += 1
 
 
 # Задание 5
@@ -67,7 +63,6 @@ groups = [
     ['Вася', 'Маша', 'Саша', 'Женя'],
 ]
 print("Задание 5")
-number = 1
-for group in groups:
-    print(f"Группа {number}: {' '.join(group)}")
-    number += 1
+for nubmer, group in enumerate(groups, 1):
+    result = ' '.join(group)
+    print(f"Группа {number}: {result}")

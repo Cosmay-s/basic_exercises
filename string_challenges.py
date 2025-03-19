@@ -11,8 +11,8 @@ print(word.lower().count('а'))
 # Вывести количество гласных букв в слове
 word = 'Архангельск'
 count = 0
-for char in word.lower():
-    if char in ["а", "е", "ё", "и", "о", "у", "ы", "э", "ю", "я"]:
+for ch in word.lower():
+    if ch in {"а", "е", "ё", "и", "о", "у", "ы", "э", "ю", "я"}:
         count += 1
 print(count)
 
