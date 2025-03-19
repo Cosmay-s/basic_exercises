@@ -34,6 +34,7 @@ import random
 import uuid
 import datetime
 import lorem
+from collections import defaultdict
 
 
 def generate_chat_history():
@@ -65,47 +66,53 @@ def generate_chat_history():
     return messages
 
 
-def who_wrote_most(message):
-    users_write = {}
-    for part in message:
-        if part['sent_by'] not in users_write:
-            users_write[part['sent_by']] = 1
-        else:
-            users_write[part['sent_by']] += 1
+def who_wrote_most(messages):
+    users_write = defaultdict(int)
+    for part in messages:
+        users_write[part['sent_by']] += 1
     result = max(users_write, key=users_write.get)
     count_result = users_write[result]
     return result, count_result
 
 
-def who_is_most_popular(message):
-    users_answer = {}
-    for part in message:
-        if part['reply_for'] == None:
+def who_is_most_popular(messages):
+    users_answer = defaultdict(int)
+    for part in messages:
+        if part['reply_for'] is None:
             continue
-
-        if part['reply_for'] not in users_answer:
-            users_answer[part['reply_for']] = 1
-        else:
-            users_answer[part['reply_for']] += 1
-    for part in message:
-        if part['id'] == max(users_answer, key=users_answer.get):
+        users_answer[part['reply_for']] += 1
+    most_popular_user = max(users_answer, key=users_answer.get)
+    for part in messages:
+        if part['id'] == most_popular_user:
             result = part['sent_by']
-            count_result = users_answer[max(users_answer, key=users_answer.get)]
+            count_result = users_answer[most_popular_user]
     return result, count_result
 
 
-def who_is_most_visible(message):
+def who_is_most_visible(messages):
     users_seen = {}
-    for part in message:
+    for part in messages:
         if part['sent_by'] not in users_seen:
             users_seen[part['sent_by']] = part['seen_by']
         else:
-            users_seen[part['sent_by']] + part['seen_by']
+            users_seen[part['sent_by']] + part['seen_by'] # если вставить сделать += - резульаты у всех становсятся одинаковыми
     for user, list_users in users_seen.items():
         users_seen[user] = len(set(list_users))
     for top in range(1, 4):
-        print(f'{top}. Id пользователя: {max(users_seen, key=users_seen.get)} - {users_seen[max(users_seen, key=users_seen.get)]} ответов!')
+        max_user = max(users_seen, key=users_seen.get)
+        print(f'{top}. Id пользователя: {max_user} - {users_seen[max_user]} ответов!')
         del users_seen[max(users_seen, key=users_seen.get)]
+
+
+def get_part_of_day(hour):
+    if 5 <= hour < 12:
+        return "Утро"
+    elif 12 <= hour < 18:
+        return "День"
+    elif 18 <= hour < 24:
+        return "Вечер"
+    else:
+        return "Ночь"
 
 
 def who_is_most_active_part_of_day(message):
@@ -117,31 +124,32 @@ def who_is_most_active_part_of_day(message):
     }
     for part in message:
         message_hour = part["sent_at"].hour
-        if message_hour > 4 and message_hour < 12:
-            part_of_day_activity["Утро"] += 1
-        elif message_hour >= 12 and message_hour < 18:
-            part_of_day_activity["День"] += 1
-        elif message_hour >= 18 and message_hour < 24:
-            part_of_day_activity["Вечер"] += 1
-        else:
-            part_of_day_activity["Ночь"] += 1
+        part_of_day = get_part_of_day(message_hour)
+        part_of_day_activity[part_of_day] += 1  
     result = max(part_of_day_activity, key=part_of_day_activity.get)
     count_result = part_of_day_activity[result]
     return result, count_result
 
 
-def the_longest_holy_war(message):
+def add_to_thread(part, holy_war_length, message_id, thread_type):
+    if thread_type and part["reply_for"] == holy_war_length[message_id][-1]:  # Если True, последовательная версия
+        holy_war_length[message_id].append(part["id"])
+    elif not thread_type and part["reply_for"] in holy_war_length[message_id]:  # Если False, связанная версия
+        holy_war_length[message_id].append(part["id"])
+
+
+def the_longest_holy_war(messages, thread_type: bool):
     holy_war_length = {}
-    for part in message:
+    for part in messages:
         if part["id"] not in holy_war_length:
             holy_war_length[part["id"]] = [part["id"]]
-            continue
+
     for message_id in holy_war_length:
-        for part in message:
-            if part["reply_for"] == None:                            # Я так и не смог сформулировать для себя что такое "тред" поэтому 2 версии.
-                continue                                             # if part["reply_for"] == holy_war_length[message_id][-1]: - последовательная версия
-            if part["reply_for"] in holy_war_length[message_id]:     # if part["reply_for"] in holy_war_length[message_id]: - связанная версия
-                holy_war_length[message_id].append(part["id"])
+        for part in messages:
+            if part["reply_for"] is None:
+                continue
+
+            add_to_thread(part, holy_war_length, message_id, thread_type)
     for message_id, tred_message_id in holy_war_length.items():
         holy_war_length[message_id] = len(tred_message_id)
     for top in range(1, 4):
@@ -152,10 +160,10 @@ def the_longest_holy_war(message):
 
 
 def main():
-    message = generate_chat_history()
-    wrote_most, count_wrote_most = who_wrote_most(message)
-    most_answer, count_most_answer = who_is_most_popular(message)
-    most_active_part_of_day, count_active_part_of_day = who_is_most_active_part_of_day(message)
+    messages = generate_chat_history()
+    wrote_most, count_wrote_most = who_wrote_most(messages)
+    most_answer, count_most_answer = who_is_most_popular(messages)
+    most_active_part_of_day, count_active_part_of_day = who_is_most_active_part_of_day(messages)
     print('1.')
     print(f'Id пользователя, который написал больше всех сообщений:\nId: {wrote_most} - {count_wrote_most} сообщений!')
     print()
@@ -164,14 +172,17 @@ def main():
     print()
     print('3.')
     print('Id пользователей, сообщения которых видело больше всего уникальных пользователей:')
-    who_is_most_visible(message)
+    who_is_most_visible(messages)
     print()
     print('4.')
     print(f'Самая активная часть дня в чате: {most_active_part_of_day} - {count_active_part_of_day} сообщений!')
     print()
     print('5.')
     print('Идентификаторы сообщений, который стали началом для самых длинных тредов:')
-    the_longest_holy_war(message)
+    print('Последовательная версия')
+    the_longest_holy_war(messages, True)
+    print('Cвязанная версия')
+    the_longest_holy_war(messages, False)
 
 
 if __name__ == "__main__":
